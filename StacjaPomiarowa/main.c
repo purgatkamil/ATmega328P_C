@@ -12,6 +12,8 @@ void ADC_Init(void)
 
 long int getADC(char channel)
 {
+	ADMUX = 0b00000000;
+	ADMUX = (1 << REFS0);
 	long int W = 0;
 	ADMUX |= channel;
 	ADCSRA |= (1 << ADSC);
@@ -60,6 +62,11 @@ void LCD_Init(void)
 	SendCommand(0x0F);
 }
 
+void Button_Init(){
+	DDRB &= ~(1 << PB0);
+	PORTB |= (1 << PB0);
+}
+
 void TemperatureMeasurement(){
 	char temperature[20];
 	long int TempResult = getADC(0);
@@ -91,21 +98,44 @@ void VoltageMeasurement(){
 
 void Display(int *mode){
 	
+	switch (*mode){
+		
+		case 0:
+			VoltageMeasurement();
+			break;
+		
+		case 1:
+			TemperatureMeasurement();
+			break;
+		
+	}
 	
+}
+
+void ChangeDisplayMode(int *mode, int *change){
+	
+	if(((PINB & 0b00000001) == 0) && (*change == 0)){
+		*change = 1;
+		if(*mode == 1)
+			*mode = 0;
+		else
+			*mode = 1;
+	}
+	if((PINB & 0b00000001) != 0) *change = 0;
 }
 
 int main(void)
 {
+	int Change = 0;
+	int DisplayMode = 1;
 	LCD_Init();
 	ADC_Init();
-	
-	int DisplayMode = 0;
-	
-	
-	
+	Button_Init();
+
     while (1) {	
+		ChangeDisplayMode(&DisplayMode, &Change);
 		SendCommand(0x01);				//Clearing LCD
-		
+		Display(&DisplayMode);
 		_delay_ms(100);		
 		
     }
