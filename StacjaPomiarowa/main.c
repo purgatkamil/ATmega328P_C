@@ -60,21 +60,51 @@ void LCD_Init(void)
 	SendCommand(0x0F);
 }
 
+void TemperatureMeasurement(){
+	char temperature[20];
+	long int TempResult = getADC(0);
+	TempResult = (TempResult * 50000)/1024;
+	ltoa(TempResult, temperature, 10);
+	SendChar(temperature[0]);
+	SendChar(temperature[1]);
+	SendChar(',');
+	SendChar(temperature[2]);
+	
+}
+
+void VoltageMeasurement(){
+	char voltage[20];
+	long int VoltResult = getADC(1);
+	VoltResult = (VoltResult * 50)/1024;
+	ltoa(VoltResult, voltage, 10);
+	if (VoltResult >= 10){
+		SendChar(voltage[0]);
+		SendChar(',');
+		SendChar(voltage[1]);
+	}
+	else{
+		SendChar('0');
+		SendChar(',');
+		SendChar(voltage[0]);
+	}	
+}
+
+void Display(int *mode){
+	
+	
+}
+
 int main(void)
 {
 	LCD_Init();
 	ADC_Init();
-	char temperature[20];
-	char temperature2[20];	
+	
+	int DisplayMode = 0;
+	
+	
+	
     while (1) {	
-		SendCommand(0x01);
-		long int result = getADC(0);
-		result = (result * 50000)/1024;
-		ltoa(result, temperature, 10);
-		SendChar(temperature[0]);
-		SendChar(temperature[1]);
-		SendChar(',');
-		SendChar(temperature[2]);
+		SendCommand(0x01);				//Clearing LCD
 		
 		_delay_ms(100);		
 		
